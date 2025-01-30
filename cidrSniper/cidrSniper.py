@@ -29,6 +29,12 @@ class Parser():
         except ValueError:
            print(f"{cdir_range} does not appear to be a valid CIDR range! Ignoring...")
            return ""
+       
+    def deduplicateLines(hosts:list) -> list:
+        return list(set(hosts))
+    
+    def sortLines(hosts:list) -> list:
+        return sorted(hosts, key=ipaddress.ip_address)
 
 
 
@@ -38,6 +44,8 @@ def parse_args():
     parser.add_argument("-s", "--single", type=str, help="Provide a single CIDR range on the command line")
     parser.add_argument("-f", "--file", type=str, help="Provide path to a file of newline separated CIDR ranges")
     parser.add_argument("-o", "--outfile", type=str, help="Will output to a file instead of stdout. No formatting, just dumps all hosts into a file")
+    parser.add_argument("-d", "--deduplicate", action="store_true" ,help="De-duplicate the output hosts when outputting to file")
+    parser.add_argument("-x", "--sort", action="store_true" ,help="Sort the output hosts when outputting to file")
 
     return parser.parse_args()
 
@@ -47,10 +55,11 @@ if __name__ == '__main__':
     
     
     if args.single:
-       single_cidr = Parser.parseSingleCDIR(args.single)
-       number_of_hosts = Parser.countTotalHostsWithinCDIR(args.single)
-       print(f"Total Hosts: {number_of_hosts}\n")
-       print("\n".join(single_cidr))
+        print(f"Generating hosts for {args.single}...\n")
+        single_cidr = Parser.parseSingleCDIR(args.single)
+        number_of_hosts = Parser.countTotalHostsWithinCDIR(args.single)
+        print(f"Total Hosts: {number_of_hosts}\n")
+        print("\n".join(single_cidr))
        
     elif args.file:
         file_path = args.file
@@ -63,12 +72,18 @@ if __name__ == '__main__':
         
         if args.outfile:
             output_file = args.outfile
+            total_lines = []
+            for line in lines:
+                line = line.strip()
+                single_cidr = Parser.parseSingleCDIR(line)
+                for host in single_cidr:
+                    total_lines.append(host)
             with open(output_file,"w") as writer:
-                for line in lines:
-                    line = line.strip()
-                    single_cidr = Parser.parseSingleCDIR(line)
-                    for host in single_cidr:
-                        writer.write(host + "\n")
+                if args.deduplicate:
+                    total_lines = Parser.deduplicateLines(total_lines)
+                if args.sort:
+                    total_lines = Parser.sortLines(total_lines)
+                writer.writelines(line + "\n" for line in total_lines)
         else:
             # Print to stdout with a bit of janky formatting
             for line in lines:

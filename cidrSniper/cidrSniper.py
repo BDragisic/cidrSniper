@@ -2,6 +2,12 @@ import argparse
 import ipaddress
 
 BANNER=f"""
+   ______________  ____     _____       _                
+  / ____/  _/ __ \/ __ \   / ___/____  (_)___  ___  _____
+ / /    / // / / / /_/ /   \__ \/ __ \/ / __ \/ _ \/ ___/
+/ /____/ // /_/ / _, _/   ___/ / / / / / /_/ /  __/ /    
+\____/___/_____/_/ |_|   /____/_/ /_/_/ .___/\___/_/     
+                                     /_/                 
 """
 
 
@@ -64,7 +70,7 @@ if __name__ == '__main__':
                     for host in single_cidr:
                         writer.write(host + "\n")
         else:
-            # Printpytho to stdout with a bit of janky formatting
+            # Print to stdout with a bit of janky formatting
             for line in lines:
                 line = line.strip()
                 single_cidr = Parser.parseSingleCDIR(line)
